@@ -1,3 +1,9 @@
+/*
+ * File:BuildGUI.java
+ * Author: Carrie Miles
+ * Date: May 1 2018
+ * Purpose: Create a GUI and provide functions for student database
+ */
 package database;
 
 import java.awt.Color;
@@ -6,6 +12,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -26,7 +33,12 @@ public class BuildGUI implements ActionListener {
 	public static JComboBox<String> selectionBox = new JComboBox <String>(selectionMenu);
 	public static JButton process = new JButton("Process Request");
 	public static int useEnt;
-	
+	public static int userID = 0;
+	private int grade;
+	private int credit;
+	public Student [] studentEntry = new Student [20];
+	//hashMap
+	public HashMap <Integer, Object> hmap = new HashMap<Integer,Object>();
 	
 	public void addComponentsToPane(Container pane) {
 		
@@ -114,10 +126,102 @@ public class BuildGUI implements ActionListener {
 		//ensure that the entry is in database
 			//TODO search file for entries
 		
-		//if JComboBox = delete
+		//JComboBox = insert
+		if (selectionBox.getSelectedItem()=="Insert") {
+			String userName = enterName.getText();
+			String userMajor = enterMajor.getText();
+			int putID = Integer.parseInt(enterTxtId.getText());
+				//create a student
+				Student user = new Student(userName, userMajor);
+				//put student into array
+				studentEntry[putID]=user;
+				int hCount = (hmap.size());
+				
+				//put student into hmap
+				if (hmap.containsKey(putID)==true) {
+					JOptionPane.showMessageDialog(null, "Database already contains Student ID " + putID + ". Please use " +
+					hCount + "as the next ID", "Warning", JOptionPane.WARNING_MESSAGE);
+				}
+				else if(hmap.containsKey(putID)==false) {
+				hmap.put(putID, user);
+				JOptionPane.showMessageDialog(null, "New Student added to the database.","Update Complete" ,  JOptionPane.INFORMATION_MESSAGE);
+				System.out.println(putID);
+				System.out.println(user.toString());
+				}
+			
+				}
+		//JComboBox = delete
+		if (selectionBox.getSelectedItem() == "Delete") {
+			int delID = Integer.parseInt(enterTxtId.getText());
+			try {
+				hmap.remove(delID);	
+				//Notice that item was removed
+				JOptionPane.showMessageDialog(null,"Student ID " + delID + " has been removed.");
+	//Remove "//" below to check HMap contents after every Deletion		
+				//JOptionPane.showMessageDialog(null, "HMap: " + hmap);
+			}catch(NullPointerException e) {
+				JOptionPane.showMessageDialog(null, "There is no student information for student ID "+delID);
+			}
+			
+			
+			
+		}
+		//JComboBox = Find
+		if (selectionBox.getSelectedItem()=="Find") {
+			int findID = Integer.parseInt(enterTxtId.getText());
+			JOptionPane.showMessageDialog(null, "Entry Found: \n" + hmap.get(findID));
+		}
 		
-		
+		//update entry
+		if (selectionBox.getSelectedItem()== "Update") {
+			String[] selGrade = new String [] {"A", "B", "C", "D", "F"} ; //Grade Menu Options
+			String [] selCredit = new String [] {"3","4","6"}; //Credit Hour menu Options
+			Student temp = new Student(); 
+			int upID = Integer.parseInt(enterTxtId.getText());  
+			JComboBox<String> box = new JComboBox<String>(selGrade);
+			JComboBox<String> numBox = new JComboBox<String>(selCredit);
+			temp = studentEntry[upID]; //placeholder object to hold hash map data while updating entry
+			
+			JOptionPane.showMessageDialog(null, box, "Choose Grade", JOptionPane.QUESTION_MESSAGE);
+			if (box.getSelectedItem()=="A") {
+				grade = 4;
+			}
+			if (box.getSelectedItem()=="B") {
+				grade =3;
+			}
+			if (box.getSelectedItem()=="C") {
+				grade=2;
+			}
+			if (box.getSelectedItem()=="D") {
+				grade=1;
+			}
+			if (box.getSelectedItem()=="F") {
+				grade=0;
+			}
+			
+			JOptionPane.showMessageDialog(null, numBox, "Choose Credits", JOptionPane.QUESTION_MESSAGE); 
+			if (numBox.getSelectedItem()=="3") {
+				credit = 3;
+			}
+			if (numBox.getSelectedItem()=="4") {
+				credit =4;
+			}
+			if (numBox.getSelectedItem()=="6") {
+				credit = 6;
+			}
+			try{
+				System.out.println("update values: " + grade +" "+credit);
+				//GPA and total Q points update
+				temp.courseCompleted(grade, credit);
+				hmap.put(upID, temp);
+				JOptionPane.showMessageDialog(null, "Student ID " + upID + " has been updated.", "Update Success", JOptionPane.PLAIN_MESSAGE);
+			}catch(NullPointerException e) {
+				JOptionPane.showMessageDialog(null, "Error: Null Pointer");
+			}
+		}
 	}
+		
+
 	
 	private void createAndShowGUI() {
 		//Create and setup the window
@@ -126,11 +230,14 @@ public class BuildGUI implements ActionListener {
 		
 		addComponentsToPane(frame.getContentPane());
 		
+		
 		//Display the Window
 		frame.pack();
 		frame.setVisible(true);
 		
 	}
+	
+	
 	public static void main(String[] args) {
 		
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
